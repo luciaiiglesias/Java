@@ -12,11 +12,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main extends Application
 {
-    private Jugador jugador;
+    private static final Map<String, Jugador> jugadores = new HashMap<>();
+    private Jugador jugadorActual;
     private Juego juego;
     private Label progresoLabel;
     private Label intentosLabel;
@@ -32,16 +35,13 @@ public class Main extends Application
     @Override
     public void start(Stage stage)
     {
-        //inicializo la instancia global del jugador solo una vez para mantener estadist
-        if (jugador == null) {
-            jugador = new Jugador("Jugador1");
-        }
+        mostrarMenuPrincipal(stage);
+    }
 
-        //VBox para organizar el menú principal
+    private void mostrarMenuPrincipal(Stage stage) {
         VBox menuRoot = new VBox(15);
         menuRoot.setStyle("-fx-padding: 20; -fx-alignment: center;");
 
-        //título del menú
         Label titulo = new Label("Juego de Ahorcado");
         titulo.setStyle("-fx-font-size: 20; -fx-font-weight: bold;");
 
@@ -52,8 +52,8 @@ public class Main extends Application
         Button salirButton = new Button("Salir");
 
         //acciones de cada botón
-        empezarJuegoButton.setOnAction(event -> mostrarJuegoSolitario(stage));
-        modoMultijugadorButton.setOnAction(event -> mostrarModoMultijugador(stage));
+        empezarJuegoButton.setOnAction(event -> solicitarNombreJugador(stage));
+        modoMultijugadorButton.setOnAction(event -> solicitarNombresMultijugador(stage));
         estadisticasButton.setOnAction(event -> mostrarEstadisticas(stage));
         salirButton.setOnAction(event -> stage.close());
 
@@ -65,11 +65,89 @@ public class Main extends Application
         stage.setTitle("Menú Principal");
         stage.setScene(menuScene);
         stage.show();
+
     }
+
+    private void solicitarNombreJugador(Stage stage)
+    {
+        VBox root = new VBox(10);
+        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        Label titulo = new Label("Identifícate para empezar el juego!");
+        titulo.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+
+        //pido nombre al jugador
+        TextField nombreInput = new TextField();
+        nombreInput.setPromptText("Nombre");
+        nombreInput.setMaxWidth(200);
+
+        Button volverAtrasButton = new Button("Volver al menú");
+        volverAtrasButton.setOnAction(event -> mostrarMenuPrincipal(stage));
+
+        Button confirmarNombreButton = new Button("Confirmar");
+        confirmarNombreButton.setOnAction(event -> {
+            String nombre = nombreInput.getText().trim();
+            if (!nombre.isEmpty()) {
+                jugadorActual = jugadores.computeIfAbsent(nombre, Jugador::new);
+                mostrarJuegoSolitario(stage);
+            } else {
+                mostrarAlerta("Error", "El nombre no puede estar vacío.");
+            }
+        });
+
+        root.getChildren().addAll(titulo, nombreInput, volverAtrasButton, confirmarNombreButton);
+
+        Scene scene = new Scene(root, 400, 300);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void solicitarNombresMultijugador(Stage stage)
+    {
+        VBox root = new VBox(10);
+        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        Label titulo = new Label("Modo Multijugador");
+        titulo.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+
+        // Inputs para los nombres de los jugadores
+        TextField jugador1Input = new TextField();
+        jugador1Input.setPromptText("Nombre del Jugador 1");
+        jugador1Input.setMaxWidth(200);
+
+        TextField jugador2Input = new TextField();
+        jugador2Input.setPromptText("Nombre del Jugador 2");
+        jugador2Input.setMaxWidth(200);
+
+        Button confirmarButton = new Button("Confirmar");
+        confirmarButton.setOnAction(event -> {
+            String nombreJugador1 = jugador1Input.getText().trim();
+            String nombreJugador2 = jugador2Input.getText().trim();
+
+            if (!nombreJugador1.isEmpty() && !nombreJugador2.isEmpty()) {
+                Jugador jugador1 = jugadores.computeIfAbsent(nombreJugador1, Jugador::new);
+                Jugador jugador2 = jugadores.computeIfAbsent(nombreJugador2, Jugador::new);
+
+                mostrarIngresoPalabra(stage, jugador1, jugador2);
+            } else {
+                mostrarAlerta("Error", "Ambos nombres deben estar completos.");
+            }
+        });
+
+        Button volverAtrasButton = new Button("Volver al menú");
+        volverAtrasButton.setOnAction(event -> mostrarMenuPrincipal(stage));
+
+        root.getChildren().addAll(titulo, jugador1Input, jugador2Input, confirmarButton, volverAtrasButton);
+
+        Scene scene = new Scene(root, 400, 300);
+        stage.setScene(scene);
+        stage.show();
+    }
+
 
     private void mostrarJuegoSolitario(Stage stage) {
         Palabra palabra = new Palabra("Navidad"); //de momento sin bdd
-        juego = new Juego(palabra, jugador, 6);
+        juego = new Juego(palabra, jugadorActual, 6);
 
         //VBox para el modo de un jugador
         VBox root = new VBox(10);
@@ -103,9 +181,9 @@ public class Main extends Application
         stage.setScene(juegoScene);
     }
 
-    private void mostrarJuegoMultijugador(Stage stage, Palabra palabra) {
-        jugador = new Jugador("Jugador2"); // En multijugador, este es el jugador 2
-        juego = new Juego(palabra, jugador, 6); // Usa la palabra proporcionada
+    private void mostrarJuegoMultijugador(Stage stage, Palabra palabra, Jugador jugadorAdivina) {
+
+        juego = new Juego(palabra, jugadorAdivina, 6); // Usa la palabra proporcionada
 
         //VBox para el modo multi
         VBox root = new VBox(10);
@@ -140,11 +218,11 @@ public class Main extends Application
     }
 
 
-    private void mostrarModoMultijugador(Stage stage) {
+    private void mostrarIngresoPalabra(Stage stage, Jugador jugador1, Jugador jugador2) {
         VBox root = new VBox(10);
         root.setStyle("-fx-padding: 20; -fx-alignment: center;");
 
-        Label instruccionLabel = new Label("Jugador 1: Ingresa la palabra secreta para el Jugador 2:");
+        Label instruccionLabel = new Label(jugador1.getNombre() + ", introduce la palabra secreta para " + jugador2.getNombre() + ":");
         TextField palabraSecretaInput = new TextField();
         palabraSecretaInput.setPromptText("Palabra secreta");
         palabraSecretaInput.setMaxWidth(200);
@@ -154,44 +232,42 @@ public class Main extends Application
             String palabraSecreta = palabraSecretaInput.getText().toUpperCase();
 
             if (!palabraSecreta.isEmpty() && palabraSecreta.matches("[A-Z]+")) {
-                //nueva instancia de Palabra y Juego con la palabra ingresada
                 Palabra nuevaPalabra = new Palabra(palabraSecreta);
-                juego = new Juego(nuevaPalabra, jugador, 6); // Nueva instancia del juego
-
-                //siguiente turno para que el jugador 2 adivine
-                mostrarJuegoMultijugador(stage, nuevaPalabra);
+                mostrarJuegoMultijugador(stage, nuevaPalabra, jugador2);
             } else {
-                Alert alerta = new Alert(Alert.AlertType.ERROR);
-                alerta.setTitle("Error");
-                alerta.setHeaderText("Palabra inválida");
-                alerta.setContentText("La palabra debe contener solo letras.");
-                alerta.showAndWait();
+                mostrarAlerta("Error", "La palabra debe contener solo letras.");
             }
         });
 
-        root.getChildren().addAll(instruccionLabel, palabraSecretaInput, confirmarPalabraButton);
+
+        Button volverAtrasButton = new Button("Volver al menú");
+        volverAtrasButton.setOnAction(event -> mostrarMenuPrincipal(stage));
+
+        root.getChildren().addAll(instruccionLabel, palabraSecretaInput, confirmarPalabraButton, volverAtrasButton);
 
         Scene scene = new Scene(root, 400, 300);
         stage.setScene(scene);
         stage.show();
     }
 
+
+
     private void mostrarEstadisticas(Stage stage) {
         VBox root = new VBox(10);
         root.setStyle("-fx-padding: 20; -fx-alignment: center;");
 
-        Label titulo = new Label("Estadísticas del jugador");
+        Label titulo = new Label("Estadísticas de los jugadores");
         titulo.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
 
-        Label partidasJugadasLabel = new Label("Partidas jugadas: " + (jugador != null ? jugador.getPartidasJugadas() : 0));
-        Label partidasGanadasLabel = new Label("Partidas ganadas: " + (jugador != null ? jugador.getPartidasGanadas() : 0));
-        Label porcentajeVictoriasLabel = new Label(String.format("Porcentaje de victorias: %.2f%%",
-                (jugador != null ? jugador.getPorcentajeVictorias() : 0.0)));
+        jugadores.forEach((nombre, jugador) -> {
+            Label jugadorLabel = new Label(nombre + ": " + jugador.getEstadisticas());
+            root.getChildren().add(jugadorLabel);
+        });
 
-        Button volverMenuButton = new Button("Volver al menú principal");
+        Button volverMenuButton = new Button("Volver al menú");
         volverMenuButton.setOnAction(event -> start(stage));
 
-        root.getChildren().addAll(titulo, partidasJugadasLabel, partidasGanadasLabel, porcentajeVictoriasLabel, volverMenuButton);
+        root.getChildren().addAll(titulo, volverMenuButton);
 
         Scene estadisticasScene = new Scene(root, 400, 300);
         stage.setScene(estadisticasScene);
@@ -216,6 +292,15 @@ public class Main extends Application
             resultadoLabel.setText(e.getMessage());
         }
     }
+
+    private void mostrarAlerta(String titulo, String mensaje) {
+        Alert alerta = new Alert(Alert.AlertType.ERROR);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+
 
 }
 
