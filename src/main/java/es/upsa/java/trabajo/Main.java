@@ -190,6 +190,8 @@ public class Main extends Application
 
         juego = new Juego(palabra, jugadorAdivina, 6); // Usa la palabra proporcionada
 
+        DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
+
         //VBox para el modo multi
         VBox root = new VBox(10);
         root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -208,6 +210,8 @@ public class Main extends Application
             if (letra.length() == 1) {
                 jugarTurno(letra.charAt(0));
                 letraInput.clear();
+                // Dibujar el ahorcado después de cada intento
+                dibujoAhorcado.dibujarParte(juego.getIntentosRestantes());
             } else {
                 resultadoLabel.setText("Por favor, ingresa solo una letra.");
             }
@@ -216,7 +220,7 @@ public class Main extends Application
         Button volverMenuButton = new Button("Volver al menú principal");
         volverMenuButton.setOnAction(event -> start(stage));
 
-        root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, volverMenuButton);
+        root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, dibujoAhorcado, volverMenuButton);
 
         Scene juegoScene = new Scene(root, 400, 300);
         stage.setScene(juegoScene);
