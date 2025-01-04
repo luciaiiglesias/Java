@@ -149,6 +149,9 @@ public class Main extends Application
         Palabra palabra = new Palabra("Navidad"); //de momento sin bdd
         juego = new Juego(palabra, jugadorActual, 6);
 
+        // Crear el lienzo para el dibujo del ahorcado
+        DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
+
         //VBox para el modo de un jugador
         VBox root = new VBox(10);
         root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -167,6 +170,8 @@ public class Main extends Application
             if (letra.length() == 1) {
                 jugarTurno(letra.charAt(0));
                 letraInput.clear();
+                // Dibujar el ahorcado después de cada intento
+                dibujoAhorcado.dibujarParte(juego.getIntentosRestantes());
             } else {
                 resultadoLabel.setText("Por favor, ingresa solo una letra.");
             }
@@ -175,7 +180,7 @@ public class Main extends Application
         Button volverMenuButton = new Button("Volver al menú principal");
         volverMenuButton.setOnAction(event -> start(stage)); // Vuelve al menú principal.
 
-        root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, volverMenuButton);
+        root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, dibujoAhorcado, volverMenuButton);
 
         Scene juegoScene = new Scene(root, 400, 300);
         stage.setScene(juegoScene);
