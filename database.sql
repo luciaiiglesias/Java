@@ -18,3 +18,5 @@ INSERT INTO palabras(palabra, id_categoria) VALUES ('Software', 3), ('Java', 3),
 
 SELECT * FROM categorias;
 SELECT * FROM palabras;
+
+SELECT palabra FROM palabras WHERE id_categoria = ?

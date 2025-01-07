@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -27,18 +28,23 @@ public class Main extends Application
     private Label resultadoLabel;
     private TextField letraInput;
 
+    private Dao dao;
+
     public static void main(String[] args)
     {
-        launch(args);
+            launch(args);   //inicio javaFX
     }
 
     @Override
-    public void start(Stage stage)
+    public void start(Stage stage) throws Exception
     {
+        dao = new DaoImpl("jdbc:postgresql://localhost:5432/upsa", "system", "manager");
+
         mostrarMenuPrincipal(stage);
     }
 
-    private void mostrarMenuPrincipal(Stage stage) {
+    private void mostrarMenuPrincipal(Stage stage)
+    {
         VBox menuRoot = new VBox(15);
         menuRoot.setStyle("-fx-padding: 20; -fx-alignment: center;");
 
@@ -146,7 +152,20 @@ public class Main extends Application
 
 
     private void mostrarJuegoSolitario(Stage stage) {
-        Palabra palabra = new Palabra("Navidad"); //de momento sin bdd
+        //Palabra palabra = new Palabra("Navidad"); //de momento sin bdd
+        String categoria = "Animales";
+        String palabraAleatoria;
+
+        try
+        {
+            palabraAleatoria = dao.seleccionarPalabraAleatoria(categoria);
+        } catch (SQLException e)
+        {
+            mostrarAlerta("Error", "No se pudo obtener la palabra de la base de datos" + e.getMessage());
+            return; //detiene si hay error
+        }
+
+        Palabra palabra = new Palabra(palabraAleatoria);
         juego = new Juego(palabra, jugadorActual, 6);
 
         // Crear el lienzo para el dibujo del ahorcado
@@ -178,7 +197,7 @@ public class Main extends Application
         });
 
         Button volverMenuButton = new Button("Volver al menú principal");
-        volverMenuButton.setOnAction(event -> start(stage)); // Vuelve al menú principal.
+        volverMenuButton.setOnAction(event -> volverAlMenuPrincipal(stage)); // Vuelve al menú principal.
 
         root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, dibujoAhorcado, volverMenuButton);
 
@@ -218,7 +237,7 @@ public class Main extends Application
         });
 
         Button volverMenuButton = new Button("Volver al menú principal");
-        volverMenuButton.setOnAction(event -> start(stage));
+        volverMenuButton.setOnAction(event -> volverAlMenuPrincipal(stage));
 
         root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, dibujoAhorcado, volverMenuButton);
 
@@ -274,7 +293,7 @@ public class Main extends Application
         });
 
         Button volverMenuButton = new Button("Volver al menú");
-        volverMenuButton.setOnAction(event -> start(stage));
+        volverMenuButton.setOnAction(event -> volverAlMenuPrincipal(stage));
 
         root.getChildren().addAll(titulo, volverMenuButton);
 
@@ -301,6 +320,11 @@ public class Main extends Application
             resultadoLabel.setText(e.getMessage());
         }
     }
+
+    private void volverAlMenuPrincipal(Stage stage) {
+        mostrarMenuPrincipal(stage);
+    }
+
 
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);
