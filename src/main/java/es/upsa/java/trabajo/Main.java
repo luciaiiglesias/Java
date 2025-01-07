@@ -175,6 +175,11 @@ public class Main extends Application
             return; //detiene si hay error
         }
 
+        Button categoriaAleatoriaButton = new Button("Categoría Aleatoria");
+        categoriaAleatoriaButton.setOnAction(event -> iniciarJuegoConCategoriaAleatoria(stage));
+        categoriaRoot.getChildren().add(categoriaAleatoriaButton);
+
+
         Scene categoriaScene = new Scene(categoriaRoot, 400, 300);
         stage.setScene(categoriaScene);
     }
@@ -188,6 +193,58 @@ public class Main extends Application
         } catch (SQLException e)
         {
             mostrarAlerta("Error", "No se pudo obtener la palabra de la base de datos: " + e.getMessage());
+            return; //detiene si hay error
+        }
+
+        Palabra palabra = new Palabra(palabraAleatoria);
+        juego = new Juego(palabra, jugadorActual, 6);
+
+        // Crear el lienzo para el dibujo del ahorcado
+        DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
+
+        //VBox para el modo de un jugador
+        VBox root = new VBox(10);
+        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        progresoLabel = new Label("Palabra: " + juego.getProgreso());
+        intentosLabel = new Label("Intentos restantes: " + juego.getIntentosRestantes());
+        letrasFalladasLabel = new Label("Letras falladas: ");
+        resultadoLabel = new Label("");
+
+        letraInput = new TextField();
+        letraInput.setPromptText("Ingresa una letra");
+
+        Button jugarTurnoButton = new Button("Adivinar Letra");
+        jugarTurnoButton.setOnAction(event -> {
+            String letra = letraInput.getText().toUpperCase();
+            if (letra.length() == 1) {
+                jugarTurno(letra.charAt(0));
+                letraInput.clear();
+                // Dibujar el ahorcado después de cada intento
+                dibujoAhorcado.dibujarParte(juego.getIntentosRestantes());
+            } else {
+                resultadoLabel.setText("Por favor, ingresa solo una letra.");
+            }
+        });
+
+        Button volverMenuButton = new Button("Volver al menú principal");
+        volverMenuButton.setOnAction(event -> volverAlMenuPrincipal(stage)); // Vuelve al menú principal.
+
+        root.getChildren().addAll(progresoLabel, intentosLabel, letrasFalladasLabel, letraInput, jugarTurnoButton, resultadoLabel, dibujoAhorcado, volverMenuButton);
+
+        Scene juegoScene = new Scene(root, 400, 300);
+        stage.setScene(juegoScene);
+    }
+
+    private void iniciarJuegoConCategoriaAleatoria(Stage stage)
+    {
+        String palabraAleatoria;
+
+        try {
+            palabraAleatoria = dao.seleccionarPalabraTodasCategorias();
+        } catch (SQLException e)
+        {
+            mostrarAlerta("Error", "No se pudo obtener la palabra aleatoria de la base de datos: " + e.getMessage());
             return; //detiene si hay error
         }
 

@@ -92,6 +92,28 @@ public class DaoImpl implements Dao
         }
         return categorias;
     }
+
+    @Override
+    public String seleccionarPalabraTodasCategorias() throws SQLException
+    {
+        final String SQL =  """
+                            SELECT palabra
+                            FROM palabras
+                            ORDER BY RANDOM() LIMIT 1
+                            """;
+
+        try(PreparedStatement psPalabra = connection.prepareStatement(SQL);
+        ResultSet rsPalabra = psPalabra.executeQuery();)
+        {
+            if (rsPalabra.next())
+            {
+                return rsPalabra.getString("palabra");
+            } else
+            {
+                throw new SQLException("No se encontró ninguna palabra en la base de datos");
+            }
+        }
+    }
 }
 
 
