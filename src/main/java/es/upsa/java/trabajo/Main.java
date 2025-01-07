@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -153,15 +154,40 @@ public class Main extends Application
 
     private void mostrarJuegoSolitario(Stage stage) {
         //Palabra palabra = new Palabra("Navidad"); //de momento sin bdd
-        String categoria = "Animales";
+        //String categoria = "Animales";
+        //String palabraAleatoria;
+
+        VBox categoriaRoot = new VBox(10);
+        categoriaRoot.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        Label seleccionCategoriaLabel = new Label("Selecciona una categoría:");
+        categoriaRoot.getChildren().add(seleccionCategoriaLabel);
+
+        try {
+            List<String> categorias = dao.obtenerCategorias();
+            for (String categoria : categorias) {
+                Button categoriaButton = new Button(categoria);
+                categoriaButton.setOnAction(event -> iniciarJuegoConCategoria(stage, categoria));
+                categoriaRoot.getChildren().add(categoriaButton);
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error", "No se pudieron cargar las categorías" + e.getMessage());
+            return; //detiene si hay error
+        }
+
+        Scene categoriaScene = new Scene(categoriaRoot, 400, 300);
+        stage.setScene(categoriaScene);
+    }
+
+    private void iniciarJuegoConCategoria(Stage stage, String categoria)
+    {
         String palabraAleatoria;
 
-        try
-        {
+        try {
             palabraAleatoria = dao.seleccionarPalabraAleatoria(categoria);
         } catch (SQLException e)
         {
-            mostrarAlerta("Error", "No se pudo obtener la palabra de la base de datos" + e.getMessage());
+            mostrarAlerta("Error", "No se pudo obtener la palabra de la base de datos: " + e.getMessage());
             return; //detiene si hay error
         }
 

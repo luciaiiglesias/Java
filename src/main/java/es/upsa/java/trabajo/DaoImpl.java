@@ -3,6 +3,8 @@ package es.upsa.java.trabajo;
 import org.postgresql.Driver;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DaoImpl implements Dao
 {
@@ -68,6 +70,27 @@ public class DaoImpl implements Dao
             System.out.println("La categoria no existe");
             return null;
         }
+    }
+
+    @Override
+    public List<String> obtenerCategorias() throws SQLException
+    {
+        List<String> categorias = new ArrayList<>();
+
+        final String SQL =  """
+                            SELECT nombre
+                            FROM categorias
+                            """;
+
+        try (PreparedStatement psCategoria = connection.prepareStatement(SQL);
+        ResultSet rsCategoria = psCategoria.executeQuery();)
+        {
+            while (rsCategoria.next())
+            {
+                categorias.add(rsCategoria.getString("nombre"));
+            }
+        }
+        return categorias;
     }
 }
 
