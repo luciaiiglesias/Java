@@ -53,7 +53,7 @@ public class Main extends Application
         titulo.setStyle("-fx-font-size: 20; -fx-font-weight: bold;");
 
         //botones del menú principal
-        Button empezarJuegoButton = new Button("Empezar juego");
+        Button empezarJuegoButton = new Button("Empezar juego solitario");
         Button modoMultijugadorButton = new Button("Modo multijugador");
         Button estadisticasButton = new Button("Estadísticas");
         Button salirButton = new Button("Salir");
@@ -88,21 +88,21 @@ public class Main extends Application
         nombreInput.setPromptText("Nombre");
         nombreInput.setMaxWidth(200);
 
-        Button volverAtrasButton = new Button("Volver al menú");
-        volverAtrasButton.setOnAction(event -> mostrarMenuPrincipal(stage));
-
         Button confirmarNombreButton = new Button("Confirmar");
         confirmarNombreButton.setOnAction(event -> {
             String nombre = nombreInput.getText().trim();
             if (!nombre.isEmpty()) {
-                jugadorActual = jugadores.computeIfAbsent(nombre, Jugador::new);
+                jugadorActual = jugadores.computeIfAbsent(nombre, Jugador::new);   //(nombre, n -> new Jugador(n))
                 mostrarJuegoSolitario(stage);
             } else {
                 mostrarAlerta("Error", "El nombre no puede estar vacío.");
             }
         });
 
-        root.getChildren().addAll(titulo, nombreInput, volverAtrasButton, confirmarNombreButton);
+        Button volverAtrasButton = new Button("Volver al menú");
+        volverAtrasButton.setOnAction(event -> mostrarMenuPrincipal(stage));
+
+        root.getChildren().addAll(titulo, nombreInput, confirmarNombreButton, volverAtrasButton);
 
         Scene scene = new Scene(root, 400, 300);
         stage.setScene(scene);
@@ -131,7 +131,8 @@ public class Main extends Application
             String nombreJugador1 = jugador1Input.getText().trim();
             String nombreJugador2 = jugador2Input.getText().trim();
 
-            if (!nombreJugador1.isEmpty() && !nombreJugador2.isEmpty()) {
+            if (!nombreJugador1.isEmpty() && !nombreJugador2.isEmpty())
+            {
                 Jugador jugador1 = jugadores.computeIfAbsent(nombreJugador1, Jugador::new);
                 Jugador jugador2 = jugadores.computeIfAbsent(nombreJugador2, Jugador::new);
 
@@ -197,7 +198,7 @@ public class Main extends Application
         }
 
         Palabra palabra = new Palabra(palabraAleatoria);
-        juego = new Juego(palabra, jugadorActual, 6);
+        juego = new JuegoSolitario(palabra, jugadorActual, 6);
 
         // Crear el lienzo para el dibujo del ahorcado
         DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
@@ -249,7 +250,7 @@ public class Main extends Application
         }
 
         Palabra palabra = new Palabra(palabraAleatoria);
-        juego = new Juego(palabra, jugadorActual, 6);
+        juego = new JuegoSolitario(palabra, jugadorActual, 6);
 
         // Crear el lienzo para el dibujo del ahorcado
         DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
@@ -288,9 +289,9 @@ public class Main extends Application
         stage.setScene(juegoScene);
     }
 
-    private void mostrarJuegoMultijugador(Stage stage, Palabra palabra, Jugador jugadorAdivina) {
+    private void mostrarJuegoMultijugador(Stage stage, Palabra palabra, Jugador jugadorPropone, Jugador jugadorAdivina) {
 
-        juego = new Juego(palabra, jugadorAdivina, 6); // Usa la palabra proporcionada
+        juego = new JuegoMultijugador(palabra, jugadorPropone, jugadorAdivina, 6); // Usa la palabra proporcionada
 
         DibujoAhorcado dibujoAhorcado = new DibujoAhorcado(300,400);
 
@@ -344,7 +345,7 @@ public class Main extends Application
 
             if (!palabraSecreta.isEmpty() && palabraSecreta.matches("[A-Z]+")) {
                 Palabra nuevaPalabra = new Palabra(palabraSecreta);
-                mostrarJuegoMultijugador(stage, nuevaPalabra, jugador2);
+                mostrarJuegoMultijugador(stage, nuevaPalabra, jugador1, jugador2);
             } else {
                 mostrarAlerta("Error", "La palabra debe contener solo letras.");
             }
@@ -371,7 +372,10 @@ public class Main extends Application
         titulo.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
 
         jugadores.forEach((nombre, jugador) -> {
-            Label jugadorLabel = new Label(nombre + ": " + jugador.getEstadisticas());
+
+            String estadisticas = jugador.getEstadisticas() + ", % Victorias: " + String.format("%.2f", jugador.getPorcentajeVictorias()) + "%";
+
+            Label jugadorLabel = new Label(nombre + ": " + estadisticas);
             root.getChildren().add(jugadorLabel);
         });
 

@@ -54,5 +54,3 @@ public class Jugador
         return "Ganadas: " + partidasGanadas + ", Perdidas: " + partidasPerdidas;
     }
 }
-
-

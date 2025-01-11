@@ -2,14 +2,13 @@ package es.upsa.java.trabajo;
 
 public class Juego
 {
-    private Palabra palabra;
-    private Jugador jugador;
-    private int intentosRestantes;
+    protected Palabra palabra;
+    //private Jugador jugador;
+    protected int intentosRestantes;
 
-    public Juego(Palabra palabra, Jugador jugador, int maxIntentos)
+    public Juego(Palabra palabra, int maxIntentos)
     {
         this.palabra = palabra;
-        this.jugador = jugador;
         this.intentosRestantes = maxIntentos;
     }
 
@@ -72,15 +71,7 @@ public class Juego
 
     public String getResultado()
     {
-        EstadoJuego estado = obtenerEstadoJuego();
-        if (estado == EstadoJuego.GANADO) {
-            jugador.incrementarGanadas();
-            return "¡Felicidades, has ganado!";
-        } else if (estado == EstadoJuego.PERDIDO) {
-            jugador.incrementarPerdidas();
-            return "Game Over. La palabra era: " + palabra.getPalabraSecreta();
-        }
-        return ""; //si el juego sigue no hay mensaje
+        return "";
     }
 
     public void reiniciarJuego(Palabra nuevaPalabra) {
