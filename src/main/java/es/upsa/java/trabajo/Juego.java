@@ -1,6 +1,7 @@
 package es.upsa.java.trabajo;
 
-public class Juego
+
+public abstract class Juego
 {
     protected Palabra palabra;
     //private Jugador jugador;
@@ -69,10 +70,8 @@ public class Juego
         return obtenerEstadoJuego() != EstadoJuego.EN_PROGRESO;
     }
 
-    public String getResultado()
-    {
-        return "";
-    }
+    public abstract String getResultado();
+
 
     public void reiniciarJuego(Palabra nuevaPalabra) {
         this.palabra = nuevaPalabra;

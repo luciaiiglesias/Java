@@ -1,5 +1,7 @@
 package es.upsa.java.trabajo;
 
+
+
 public class JuegoSolitario extends Juego
 {
     private Jugador jugador;

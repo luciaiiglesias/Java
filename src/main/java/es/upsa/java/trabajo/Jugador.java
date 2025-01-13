@@ -1,5 +1,7 @@
 package es.upsa.java.trabajo;
 
+
+
 public class Jugador
 {
     private String nombre;
